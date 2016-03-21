@@ -1,12 +1,9 @@
-// gl
 #include<GL/gl.h>
 #include<GL/glu.h>
 #include<GL/glut.h>
 
 #include<cmath>
 #include<vector>
-
-#include"shape.h"
 
 /*
  * a class representing an object in space.
@@ -21,16 +18,17 @@
  *              ultimately changes the rotation to parent
  */
 
-class Translation;
+class Transformation;
+class Shape;
 
 class Node {
     public:
-        Translation &parent;
-        std::vector<Translation*> childs;
+        Node();
+        Transformation &parent;
+        std::vector<Transformation*> childs;
+        std::vector<Shape*> shapes;
 
         void rotate();
         void rotate_to_vector();
-    private:
-        std::vector<Shape*> shapes;
 };
 

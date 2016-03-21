@@ -6,3 +6,8 @@ Transformation::Transformation(Node &parent, Node &child, GLfloat* matrix)
     for (int i; i < 16; i++)
         this->matrix[i] = matrix[i];
 }
+
+Transformation::~Transformation()
+{
+    delete &child;
+}

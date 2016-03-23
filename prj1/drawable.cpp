@@ -1,12 +1,17 @@
-#include"my_shapes.h"
+#include"drawable.h"
 
-Cylinder::Cylinder(Node &node, GLfloat *color, GLfloat radius, GLfloat height,
-        GLint slices, bool lids, GLfloat range)
-    : Shape(node), radius(radius), height(height), slices(slices), lids(lids)
-      , range(range)
+Drawable::Drawable(GLfloat *color)
 {
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++) {
         this->color[i] = color[i];
+    }
+}
+
+Cylinder::Cylinder(GLfloat *color, GLfloat radius, GLfloat height,
+        GLint slices, bool lids, GLfloat range)
+    : Drawable(color), radius(radius), height(height), slices(slices)
+    , lids(lids), range(range)
+{
 }
 
 void Cylinder::draw()
@@ -67,13 +72,11 @@ void Cylinder::draw_lids()
     glEnd();
 }
 
-Torus::Torus(Node &node, GLfloat *color, GLfloat rev_radius, GLfloat cir_radius,
+Torus::Torus(GLfloat *color, GLfloat rev_radius, GLfloat cir_radius,
         GLint sides, GLint rings, GLfloat rev_range, GLfloat cir_range)
-    : Shape(node), rev_radius(rev_radius), cir_radius(cir_radius), sides(sides)
-      , rings(rings), rev_range(rev_range), cir_range(cir_range)
+    : Drawable(color), rev_radius(rev_radius), cir_radius(cir_radius)
+    , sides(sides), rings(rings), rev_range(rev_range), cir_range(cir_range)
 {
-    for(int i = 0; i < 3; i++)
-        this->color[i] = color[i];
 }
 
 void Torus::draw()
@@ -96,10 +99,9 @@ void Torus::draw()
     }
 }
 
-Box::Box(Node &node, GLfloat *color, GLfloat *xyz) : Shape(node)
+Box::Box(GLfloat *color, GLfloat *xyz) : Drawable(color)
 {
     for(int i = 0; i < 3; i++) {
-        this->color[i] = color[i];
         this->xyz[i] = xyz[i];
     }
 }

@@ -6,7 +6,7 @@
 
 #include"node.h"
 
-void resize();
+void resize(int width, int height);
 void display();
 
 int main(int argc, char** argv) {

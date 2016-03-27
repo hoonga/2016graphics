@@ -24,29 +24,31 @@ class Shape {
         GLfloat rotation[4];
 };
 
-class Cylinder : Shape {
+class Cylinder : public Shape {
     public:
-        Cylinder(GLfloat *coord, GLfloat *color, GLfloat radius, int slices,
-                bool lids=true, GLfloat range=2*M_PI);
+        Cylinder(GLfloat *coord, GLfloat *color, GLfloat radius, GLfloat height,
+                int slices, bool lids=true, GLfloat range=2*M_PI);
         virtual void draw();
 
     private:
         GLfloat radius;
+        GLfloat height;
         GLfloat range;
         int slices;
         bool lids;
 };
 
-class Torus : Shape {
+class Torus : public Shape {
     public:
         Torus(GLfloat *coord, GLfloat *color, GLfloat R, GLfloat r, int slices,
-                GLfloat R_range=2*M_PI, GLfloat r_range=2*M_PI);
+                int rings, GLfloat R_range=2*M_PI, GLfloat r_range=2*M_PI);
         virtual void draw();
 
     private:
         GLfloat R;
         GLfloat r;
         int slices;
+        int rings;
         GLfloat R_range;
         GLfloat r_range;
 };

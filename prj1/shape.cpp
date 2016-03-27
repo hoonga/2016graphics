@@ -32,10 +32,10 @@ void Shape::paint(GLfloat *color)
         this->color[i] = color[i];
 }
 
-Cylinder::Cylinder(GLfloat *coord, GLfloat *color, GLfloat radius, int slices,
-                    bool lids, GLfloat range)
+Cylinder::Cylinder(GLfloat *coord, GLfloat *color, GLfloat radius, GLfloat height,
+        int slices, bool lids, GLfloat range)
         : Shape(coord, color), radius(radius), slices(slices), lids(lids)
-          , range(range)
+          , range(range), height(height)
 {
 }
 
@@ -44,9 +44,9 @@ void Cylinder::draw()
 }
 
 Torus::Torus(GLfloat *coord, GLfloat *color, GLfloat R, GLfloat r, int slices,
-            GLfloat R_range, GLfloat r_range)
-        : Shape(coord, color), R(R), r(r), slices(slices), R_range(R_range)
-          , r_range(r_range)
+            int rings, GLfloat R_range, GLfloat r_range)
+        : Shape(coord, color), R(R), r(r), slices(slices), rings(rings)
+          , R_range(R_range), r_range(r_range)
 {
 }
 

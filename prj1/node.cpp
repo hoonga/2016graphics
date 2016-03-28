@@ -1,4 +1,5 @@
 #include"node.h"
+#include<stdio.h>
 
 Node::Node() : parent(NULL), shapes(std::vector<Shape*>())
                , childs(std::vector<Node*>()), index_at_parent(0)
@@ -9,7 +10,7 @@ Node::Node(Node *parent, GLfloat *translation, GLfloat *rotation)
     : shapes(std::vector<Shape*>()), childs(std::vector<Node*>())
 {
     index_at_parent = parent->childs.size();
-    Branch *b = new Branch(, );
+    Branch *b = new Branch(translation, rotation);
     this->parent = b;
     parent->childs.push_back(this);
 }

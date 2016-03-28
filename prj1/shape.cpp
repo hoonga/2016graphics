@@ -1,4 +1,5 @@
-#include "shape.h"
+#include"shape.h"
+#include<stdio.h>
 
 Shape::Shape(GLfloat *coord, GLfloat *color)
 {
@@ -34,7 +35,8 @@ void Shape::paint(GLfloat *color)
 
 void Shape::initShape()
 {
-    glMatrixMode(GL_MODELVIEW);
+    //glMatrixMode(GL_MODELVIEW);
+    printf("color : %f %f %f\n", color[0], color[1], color[2]);
     glColor4fv(color);
     glRotatef(rotation[0], rotation[1], rotation[2], rotation[3]);
     glTranslatef(coord[0], coord[1], coord[2]);
@@ -49,6 +51,7 @@ Cylinder::Cylinder(GLfloat *coord, GLfloat *color, GLfloat radius, GLfloat heigh
 
 void Cylinder::draw()
 {
+    initShape();
     if(!radius)
         return;
     if(height)
@@ -107,6 +110,7 @@ Torus::Torus(GLfloat *coord, GLfloat *color, GLfloat R, GLfloat r, int slices,
 
 void Torus::draw()
 {
+    initShape();
     GLfloat t = -0.5*R_range;
     GLfloat dt = R_range/rings;
     GLfloat w = -0.5*r_range;

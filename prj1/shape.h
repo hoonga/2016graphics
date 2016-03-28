@@ -19,6 +19,8 @@ class Shape {
         virtual void translate(GLfloat x, GLfloat y, GLfloat z);
         virtual void paint(GLfloat *color);
     protected:
+        void initShape();
+
         GLfloat coord[3];
         GLfloat color[4];
         GLfloat rotation[4];
@@ -27,10 +29,13 @@ class Shape {
 class Cylinder : public Shape {
     public:
         Cylinder(GLfloat *coord, GLfloat *color, GLfloat radius, GLfloat height,
-                int slices, bool lids=true, GLfloat range=2*M_PI);
+                int slices, bool lids=true, GLfloat range=360);
         virtual void draw();
 
     private:
+        void drawLid();
+        void drawSide();
+
         GLfloat radius;
         GLfloat height;
         GLfloat range;
@@ -41,7 +46,7 @@ class Cylinder : public Shape {
 class Torus : public Shape {
     public:
         Torus(GLfloat *coord, GLfloat *color, GLfloat R, GLfloat r, int slices,
-                int rings, GLfloat R_range=2*M_PI, GLfloat r_range=2*M_PI);
+                int rings, GLfloat R_range=360, GLfloat r_range=360);
         virtual void draw();
 
     private:
@@ -51,4 +56,13 @@ class Torus : public Shape {
         int rings;
         GLfloat R_range;
         GLfloat r_range;
+};
+
+class Box : public Shape {
+    public:
+        Box(GLfloat *coord, GLfloat *color, GLfloat *xyz);
+        virtual void draw();
+
+    private:
+        GLfloat xyz[3];
 };

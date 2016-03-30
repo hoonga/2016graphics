@@ -1,6 +1,8 @@
 #include"shape.h"
 #include<stdio.h>
 
+#define rad(x) ((x)*M_PI/180)
+
 Shape::Shape(GLfloat *coord, GLfloat *color)
 {
     for (int i = 0; i < 3; i++) {
@@ -33,13 +35,17 @@ void Shape::paint(GLfloat *color)
         this->color[i] = color[i];
 }
 
-void Shape::initShape()
+void Shape::initDraw()
 {
-    //glMatrixMode(GL_MODELVIEW);
-    printf("color : %f %f %f\n", color[0], color[1], color[2]);
     glColor4fv(color);
+    glPushMatrix();
     glRotatef(rotation[0], rotation[1], rotation[2], rotation[3]);
     glTranslatef(coord[0], coord[1], coord[2]);
+}
+
+void Shape::endDraw()
+{
+    glPopMatrix();
 }
 
 Cylinder::Cylinder(GLfloat *coord, GLfloat *color, GLfloat radius, GLfloat height,
@@ -51,13 +57,14 @@ Cylinder::Cylinder(GLfloat *coord, GLfloat *color, GLfloat radius, GLfloat heigh
 
 void Cylinder::draw()
 {
-    initShape();
+    initDraw();
     if(!radius)
         return;
     if(height)
         drawSide();
     if(lids)
         drawLid();
+    endDraw();
 }
 
 void Cylinder::drawSide()
@@ -69,8 +76,8 @@ void Cylinder::drawSide()
 
     glBegin(GL_TRIANGLE_STRIP);
     for (; t <= 0.5*range; t += dt) {
-        glVertex3f(r*cos(t), r*sin(t), h);
-        glVertex3f(r*cos(t), r*sin(t), -h);
+        glVertex3f(r*sin(rad(t)), h, r*cos(rad(t)));
+        glVertex3f(r*sin(rad(t)), -h, r*cos(rad(t)));
     }
     glEnd();
 }
@@ -84,9 +91,9 @@ void Cylinder::drawLid()
 
     // top
     glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0, h);
+    glVertex3f(0, h, 0);
     for(; t <= 0.5*range; t += dt)
-        glVertex3f(r*cos(t), r*sin(t), h);
+        glVertex3f(r*sin(rad(t)), h, r*cos(rad(t)));
     glEnd();
 
     // no height == only top
@@ -95,9 +102,9 @@ void Cylinder::drawLid()
 
     // bottom
     glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0, 0, -h);
+    glVertex3f(0, -h, 0);
     for(t = -0.5*range; t <= range; t += dt)
-        glVertex3f(r*cos(t), r*sin(t), -h);
+        glVertex3f(r*sin(rad(t)), -h, r*cos(rad(t)));
     glEnd();
 }
 
@@ -110,7 +117,7 @@ Torus::Torus(GLfloat *coord, GLfloat *color, GLfloat R, GLfloat r, int slices,
 
 void Torus::draw()
 {
-    initShape();
+    initDraw();
     GLfloat t = -0.5*R_range;
     GLfloat dt = R_range/rings;
     GLfloat w = -0.5*r_range;
@@ -119,11 +126,12 @@ void Torus::draw()
     for(; t <= 0.5*R_range; t += dt) {
         glBegin(GL_TRIANGLE_STRIP);
         for(w = -0.5*r_range; w <= 0.5*r_range; w += dw) {
-            glVertex3f(R*cos(t) + r*cos(w), R*sin(t), r*sin(w));
-            glVertex3f(R*cos(t) + r*cos(w), R*sin(t+dt), t*sin(w));
+            glVertex3f(sin(rad(t))*(R + r*cos(rad(w))), r*sin(rad(w)), cos(rad(t))*(R + r*cos(rad(w))));
+            glVertex3f(sin(rad(t+dt))*(R + r*cos(rad(w))), r*sin(rad(w)), cos(rad(t+dt))*(R + r*cos(rad(w))));
         }
         glEnd();
     }
+    endDraw();
 }
 
 Box::Box(GLfloat *coord, GLfloat *color, GLfloat *xyz) : Shape(coord, color)
@@ -134,6 +142,7 @@ Box::Box(GLfloat *coord, GLfloat *color, GLfloat *xyz) : Shape(coord, color)
 
 void Box::draw()
 {
+    initDraw();
     GLfloat x = xyz[0];
     GLfloat y = xyz[1];
     GLfloat z = xyz[2];
@@ -153,4 +162,5 @@ void Box::draw()
     glVertex3f(x, y, z);
     glVertex3f(x, -y, -z);
     glEnd();
+    endDraw();
 }

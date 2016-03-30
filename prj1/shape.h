@@ -19,7 +19,8 @@ class Shape {
         virtual void translate(GLfloat x, GLfloat y, GLfloat z);
         virtual void paint(GLfloat *color);
     protected:
-        void initShape();
+        void initDraw();
+        void endDraw();
 
         GLfloat coord[3];
         GLfloat color[4];

@@ -17,9 +17,7 @@ Node *root;
 GLfloat WHITE[4] = {1, 1, 1, 1};
 GLfloat BLACK[4] = {0.1, 0.1, 0.1, 1};
 GLfloat GRAY[4] = {0.3, 0.3, 0.3, 1};
-GLfloat RED[4] = {1, 0, 0, 0};
-GLfloat BLUE[4] = {0, 0, 1, 1};
-GLfloat GREEN[4] = {0, 1,0, 1};
+GLfloat YELLOW[4] = {1, 1, 0, 1};
 GLfloat O[3] = {0, 0, 0};
 int SLICES = 50;
 int RINGS = 50;
@@ -27,6 +25,11 @@ int RINGS = 50;
 // cam postions
 GLfloat cam_x = 0, cam_y = -40, cam_z = 100;
 GLfloat rotx = 0, roty = 0, rotz = 0;
+
+Node *joint1, *joint2, *joint3;
+
+// glados look at vec
+GLfloat g_x = 0, g_y = -1, g_z = -1;
 
 int main(int argc, char **argv)
 {
@@ -61,7 +64,7 @@ int main(int argc, char **argv)
     // begining of body
     GLfloat t1[3] = {0, -45, 0};
     GLfloat r1[4] = {0, 0, 1, 0};
-    Node *joint1 = new Node(root, t1, r1);
+    joint1 = new Node(root, t1, r1);
     r1[0] = -180;
     t1[1] = -10;
     Node *cable_node = new Node(joint1, t1, r1);
@@ -71,41 +74,49 @@ int main(int argc, char **argv)
 
     // upper body
     Node *upper_body = new Node(cable_node, t1, r1);
-    Cylinder *ubody_c = new Cylinder(O, GREEN, 10, 8, SLICES);
+    Cylinder *ubody_c = new Cylinder(O, GRAY, 10, 8, SLICES);
     ubody_c->rotate(90, 0, 0, 1);
-    Torus *ubody_t = new Torus(O, GREEN, 10, 5, SLICES, RINGS);
-    ubody_t->rotate(90, 0, 0, 1);
-    Torus *ubody_plate = new Torus(O, GREEN, 12, 7.5, SLICES, RINGS, 120, 180);
+    Cylinder *ubody_c2 = new Cylinder(O, BLACK, 7, 10, SLICES);
+    ubody_c2->rotate(90, 0, 0, 1);
+    Torus *ubody_plate = new Torus(O, WHITE, 10, 7.5, SLICES, RINGS, 120, 180);
     ubody_plate->rotate(90, 0, 0, 1);
     upper_body->shapes.push_back(ubody_plate);
     upper_body->shapes.push_back(ubody_c);
-    upper_body->shapes.push_back(ubody_t);
+    upper_body->shapes.push_back(ubody_c2);
 
     // lower body
-    GLfloat t2[3] = {0, -5, 0};
-    GLfloat r2[4] = {0, 1, 0, 0};
-    Node *joint2 = new Node(upper_body, t1, r2);
+    GLfloat t2[3] = {0, -7.5, 0};
+    GLfloat r2[4] = {30, 1, 0, 0};
+    joint2 = new Node(upper_body, t1, r2);
     Node *lower_body = new Node(joint2, t2, r0);
     lower_body->shapes.push_back(new Cylinder(O, WHITE, 5, 10, SLICES));
-    Torus *lbody_plate = new Torus(O, WHITE, 5, 5, SLICES, RINGS, 180, 180);
+    Torus *lbody_plate = new Torus(O, WHITE, 5, 3, SLICES, RINGS, 120, 180);
     lbody_plate->rotate(90, 0, 0, 1);
+    lower_body->shapes.push_back(lbody_plate);
 
     // head
     GLfloat t3[3] = {0, -2.5, 0};
-    Node *joint3 = new Node(lower_body, t2, r2);
+    GLfloat r3[4] = {90, 1, 0, 0};
+    joint3 = new Node(lower_body, t2, r2);
     Node *neck = new Node(joint3, t3, r0);
-    Node *head = new Node(neck, t3, r0);
+    Node *head = new Node(neck, O, r3);
+    Node *eye = new Node(head, O, r0);
     neck->shapes.push_back(new Cylinder(O, GRAY, 2.5, 5, SLICES));
     Cylinder *head_c = new Cylinder(O, GRAY, 5, 5, SLICES, true, 180);
     head_c->rotate(-90, 0, 0, 1);
-    Torus *head_t = new Torus(O, GRAY, 5, 3, SLICES, RINGS, 180, 180);
+    Torus *head_t = new Torus(O, WHITE, 5, 3, SLICES, RINGS, 180, 180);
     head_t->rotate(-90, 0, 0, 1);
-    GLfloat xyz[3] = {0.5, 0.5, 1};
-    O[1] = -8;
-    Box *eye = new Box(O, GRAY, xyz);
+    GLfloat xyz[3] = {3, 4, 3};
+    O[2] = 7;
+    Box *eye_b = new Box(O, GRAY, xyz);
+    O[2] = 1;
+    O[1] = 9.1;
+    Cylinder *eye_bulb = new Cylinder(O, YELLOW, 1, 0, SLICES);
+    eye_bulb->rotate(90, 1, 0, 0);
     head->shapes.push_back(head_c);
     head->shapes.push_back(head_t);
-    head->shapes.push_back(eye);
+    eye->shapes.push_back(eye_b);
+    eye->shapes.push_back(eye_bulb);
 
     // assign callbacks
     glutReshapeFunc(reshape);
@@ -129,6 +140,9 @@ void reshape(int w, int h)
     glLoadIdentity();
 }
 
+void lights()
+{
+}
 
 void cam()
 {
@@ -141,7 +155,11 @@ void cam()
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
     cam();
+    GLfloat pos[4] = {100, 10, -100, 1};
+    glLightfv(GL_LIGHT0, GL_POSITION, pos);
     glEnable(GL_DEPTH_TEST);
     root->draw();
     glutSwapBuffers();
@@ -156,8 +174,10 @@ void timer(int value)
 
 void keyboard(unsigned char key, int x, int y)
 {
-    printf("x %f y %f z %f\n",cam_x, cam_y, cam_z);
-    const float v = 1;
+    static float v = 1;
+    static float yr = 0;
+    static float xr = 0;
+    static float xr2 = 0;
     switch(key) {
         case 'w':
             cam_x += v*sin(rad(roty));
@@ -181,6 +201,29 @@ void keyboard(unsigned char key, int x, int y)
         case 'f':
             cam_y -= v;
             break;
+        case '[':
+            joint1->parent->rotation[0] = yr;
+            yr++;
+            break;
+        case ']':
+            joint1->parent->rotation[0] = yr;
+            yr--;
+            break;
+        case '=':
+            joint2->parent->rotation[0] = xr;
+            xr++;
+            break;
+        case '-':
+            joint2->parent->rotation[0] = xr;
+            xr--;
+            break;
+        case '+':
+            joint3->parent->rotation[0] = xr2;
+            xr2++;
+            break;
+        case '_':
+            joint3->parent->rotation[0] = xr2;
+            xr2--;
     }
 }
 
@@ -194,7 +237,6 @@ void mouse(int button, int state, int x, int y)
 
 void motion(int x, int y)
 {
-    printf("rotx %f roty %f\n",rotx, roty);
     roty += (x - prevx);
     rotx += (y - prevy);
     prevx = x;

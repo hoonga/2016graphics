@@ -18,6 +18,9 @@ class Shape {
         virtual void rotate(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
         virtual void translate(GLfloat x, GLfloat y, GLfloat z);
         virtual void paint(GLfloat *color);
+        virtual void scale(GLfloat x, GLfloat y, GLfloat z);
+        virtual void lighting(GLint light);
+
     protected:
         void initDraw();
         void endDraw();
@@ -25,6 +28,8 @@ class Shape {
         GLfloat coord[3];
         GLfloat color[4];
         GLfloat rotation[4];
+        GLfloat scales[3] = {1, 1, 1};
+        GLint light = GL_LIGHT0;
 };
 
 class Cylinder : public Shape {
@@ -63,7 +68,4 @@ class Box : public Shape {
     public:
         Box(GLfloat *coord, GLfloat *color, GLfloat *xyz);
         virtual void draw();
-
-    private:
-        GLfloat xyz[3];
 };

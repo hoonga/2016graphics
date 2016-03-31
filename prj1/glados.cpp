@@ -28,9 +28,6 @@ GLfloat rotx = 0, roty = 0, rotz = 0;
 
 Node *joint1, *joint2, *joint3;
 
-// glados look at vec
-GLfloat g_x = 0, g_y = -1, g_z = -1;
-
 int main(int argc, char **argv)
 {
     // Init procedure
@@ -41,9 +38,10 @@ int main(int argc, char **argv)
     glutCreateWindow("GLaDOS");
 
     // create glados
+    GLfloat r_0[4] = {180, 0, 1, 0};
     GLfloat t0[3] =  {0, 0, 0};
     GLfloat r0[4] = {0,};
-    Branch *inital_position = new Branch(t0, r0);
+    Branch *inital_position = new Branch(t0, r_0);
     root = new Node();
     root->parent = inital_position;
 
@@ -86,21 +84,22 @@ int main(int argc, char **argv)
 
     // lower body
     GLfloat t2[3] = {0, -7.5, 0};
-    GLfloat r2[4] = {30, 1, 0, 0};
+    GLfloat r2[4] = {0, 1, 0, 0};
     joint2 = new Node(upper_body, t1, r2);
     Node *lower_body = new Node(joint2, t2, r0);
-    lower_body->shapes.push_back(new Cylinder(O, WHITE, 5, 10, SLICES));
-    Torus *lbody_plate = new Torus(O, WHITE, 5, 3, SLICES, RINGS, 120, 180);
+    lower_body->shapes.push_back(new Cylinder(O, GRAY, 5, 14, SLICES));
+    Torus *lbody_plate = new Torus(O, WHITE, 5.5, 3.5, SLICES, RINGS, 120, 180);
     lbody_plate->rotate(90, 0, 0, 1);
     lower_body->shapes.push_back(lbody_plate);
 
     // head
     GLfloat t3[3] = {0, -2.5, 0};
     GLfloat r3[4] = {90, 1, 0, 0};
+    GLfloat t4[3] = {0, -3, 8.71};
     joint3 = new Node(lower_body, t2, r2);
     Node *neck = new Node(joint3, t3, r0);
     Node *head = new Node(neck, O, r3);
-    Node *eye = new Node(head, O, r0);
+    Node *eye = new Node(head, t4, r0);
     neck->shapes.push_back(new Cylinder(O, GRAY, 2.5, 5, SLICES));
     Cylinder *head_c = new Cylinder(O, GRAY, 5, 5, SLICES, true, 180);
     head_c->rotate(-90, 0, 0, 1);
@@ -108,14 +107,15 @@ int main(int argc, char **argv)
     head_t->rotate(-90, 0, 0, 1);
     GLfloat xyz[3] = {3, 4, 3};
     O[2] = 7;
+    O[1] = -2;
     Box *eye_b = new Box(O, GRAY, xyz);
-    O[2] = 1;
-    O[1] = 9.1;
+    O[2] = 0;
+    O[1] = 0;
     Cylinder *eye_bulb = new Cylinder(O, YELLOW, 1, 0, SLICES);
     eye_bulb->rotate(90, 1, 0, 0);
     head->shapes.push_back(head_c);
     head->shapes.push_back(head_t);
-    eye->shapes.push_back(eye_b);
+    head->shapes.push_back(eye_b);
     eye->shapes.push_back(eye_bulb);
 
     // assign callbacks
@@ -140,10 +140,6 @@ void reshape(int w, int h)
     glLoadIdentity();
 }
 
-void lights()
-{
-}
-
 void cam()
 {
     glLoadIdentity();
@@ -158,7 +154,7 @@ void display()
     glEnable(GL_LIGHTING);
     glEnable(GL_COLOR_MATERIAL);
     cam();
-    GLfloat pos[4] = {100, 10, -100, 1};
+    GLfloat pos[4] = {100, -20, 100, 1};
     glLightfv(GL_LIGHT0, GL_POSITION, pos);
     glEnable(GL_DEPTH_TEST);
     root->draw();
@@ -178,6 +174,10 @@ void keyboard(unsigned char key, int x, int y)
     static float yr = 0;
     static float xr = 0;
     static float xr2 = 0;
+    const float xrmin = 0;
+    const float xrmax = 90;
+    const float xr2min = 0;
+    const float xr2max = 90;
     switch(key) {
         case 'w':
             cam_x += v*sin(rad(roty));
@@ -211,19 +211,22 @@ void keyboard(unsigned char key, int x, int y)
             break;
         case '=':
             joint2->parent->rotation[0] = xr;
-            xr++;
+            xr = (xr + 1) < xrmax ? xr + 1 : xr;
             break;
         case '-':
             joint2->parent->rotation[0] = xr;
-            xr--;
+            xr = (xr - 1) > xrmin ? xr - 1 : xr;
             break;
         case '+':
             joint3->parent->rotation[0] = xr2;
-            xr2++;
+            xr2 = (xr2 + 1) < xr2max ? xr2 + 1 : xr2;
             break;
         case '_':
             joint3->parent->rotation[0] = xr2;
-            xr2--;
+            xr2 = (xr2 - 1) > xr2min ? xr2 - 1 : xr2;
+            break;
+        case 27:
+            exit(0);
     }
 }
 

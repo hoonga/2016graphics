@@ -1,27 +1,33 @@
 #Way to compile
 
 This tar has a Makefile.
+use 'make run' to compile and run ELF
 
-use 'make' to make ELF.
+#implementations and check
 
-use 'make run' to run ELF
+## rotation
+    just left-click and drag
 
-#Ways to check Hierarchy
+## translation
+    just right-click and drag
 
-In this program, you can walk around, allowing the camera to view every where you want.
+## zoom
+    press key '=' to zoom in
+    press key '-' to zoom out
+    press key ']' to zoom faster
+    press key '[' to zoom slower
 
-Use 'w, a, s, d' like any fps game to move along the x-z plane.
+##dolly
+    press key '+' or shift+'=' to dolly in
+    press key '_' or shift+'-' to dolly out
+    press key '}' or shift+']' to dolly faster
+    press key '{' or shift+'[' to dolly slower
 
-Use 'space' to move up along the y axis.
+##show all
+    press spacebar
 
-Use 'f' to move down along the y axis.
+##reset camera
+    press enter
 
-Click and move mouse to change orientation of the camera
-
-This cute GLaDOS model has 3 joints.
-
-To move the first joint use '[' , ']'
-
-To move the second, use '-', '='
-
-To move the third, use '_'(shift'+'-'), '+'('shift'+'=')
+##seek
+    not implemented

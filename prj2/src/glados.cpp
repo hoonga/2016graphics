@@ -1,4 +1,5 @@
 #include"node.h"
+#include"trackball.h"
 #include<stdio.h>
 
 #define rad(x) ((x)*M_PI/180)
@@ -7,7 +8,6 @@ void display();
 void timer(int);
 void keyboard(unsigned char, int, int);
 void mouse(int, int, int, int);
-void motion(int, int);
 
 unsigned int time_step = 50;
 
@@ -22,9 +22,11 @@ GLfloat O[3] = {0, 0, 0};
 int SLICES = 50;
 int RINGS = 50;
 
-// cam postions
-GLfloat cam_x = 0, cam_y = -40, cam_z = 100;
-GLfloat rotx = 0, roty = 0, rotz = 0;
+// trackball
+Trackball *trackball;
+Camera *cam;
+int width;
+int height;
 
 Node *joint1, *joint2, *joint3;
 
@@ -39,7 +41,7 @@ int main(int argc, char **argv)
 
     // create glados
     GLfloat r_0[4] = {180, 0, 1, 0};
-    GLfloat t0[3] =  {0, 0, 0};
+    GLfloat t0[3] =  {0, 40, 0};
     GLfloat r0[4] = {0,};
     Branch *inital_position = new Branch(t0, r_0);
     root = new Node();
@@ -118,13 +120,16 @@ int main(int argc, char **argv)
     head->shapes.push_back(eye_b);
     eye->shapes.push_back(eye_bulb);
 
+    // trackballs and cams
+    cam = new Camera();
+    trackball = new Trackball(cam);
+
     // assign callbacks
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
     glutTimerFunc(time_step, timer, 0);
     glutKeyboardFunc(keyboard);
     glutMouseFunc(mouse);
-    glutMotionFunc(motion);
 
     // start
     glutMainLoop();
@@ -132,32 +137,26 @@ int main(int argc, char **argv)
 
 void reshape(int w, int h)
 {
+    width = w;
+    height = h;
     glViewport(0, 0, w, h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45.0f, (GLfloat)w / (GLfloat)h, .1f, 500.0f);
+    cam->aspect = (GLfloat)w/(GLfloat)h;
+    cam->lookAt();
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
 
-void cam()
-{
-    glLoadIdentity();
-    glRotatef(rotx, 1, 0, 0);
-    glRotatef(roty, 0, 1, 0);
-    glTranslatef(-cam_x, -cam_y, -cam_z);
-}
 
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_LIGHTING);
     glEnable(GL_COLOR_MATERIAL);
-    cam();
+    glEnable(GL_DEPTH_TEST);
+    cam->lookAt();
+    root->draw();
     GLfloat pos[4] = {100, -20, 100, 1};
     glLightfv(GL_LIGHT0, GL_POSITION, pos);
-    glEnable(GL_DEPTH_TEST);
-    root->draw();
+    glEnable(GL_LIGHTING);
     glutSwapBuffers();
 }
 
@@ -170,7 +169,6 @@ void timer(int value)
 
 void keyboard(unsigned char key, int x, int y)
 {
-    static float v = 1;
     static float yr = 0;
     static float xr = 0;
     static float xr2 = 0;
@@ -178,70 +176,98 @@ void keyboard(unsigned char key, int x, int y)
     const float xrmax = 90;
     const float xr2min = 0;
     const float xr2max = 90;
+    static float dfov = 1;
+    static float dz = 3;
     switch(key) {
-        case 'w':
-            cam_x += v*sin(rad(roty));
-            cam_z -= v*cos(rad(roty));
-            break;
-        case 's':
-            cam_x -= v*sin(rad(roty));
-            cam_z += v*cos(rad(roty));
-            break;
-        case 'a':
-            cam_x -= v*cos(rad(roty));
-            cam_z -= v*sin(rad(roty));
-            break;
-        case 'd':
-            cam_x += v*cos(rad(roty));
-            cam_z += v*sin(rad(roty));
-            break;
-        case ' ':
-            cam_y += v;
-            break;
-        case 'f':
-            cam_y -= v;
-            break;
-        case '[':
+        case 'o':
             joint1->parent->rotation[0] = yr;
             yr++;
             break;
-        case ']':
+        case 'p':
             joint1->parent->rotation[0] = yr;
             yr--;
             break;
-        case '=':
+        case '0':
             joint2->parent->rotation[0] = xr;
             xr = (xr + 1) < xrmax ? xr + 1 : xr;
             break;
-        case '-':
+        case '9':
             joint2->parent->rotation[0] = xr;
             xr = (xr - 1) > xrmin ? xr - 1 : xr;
             break;
-        case '+':
+        case ')':
             joint3->parent->rotation[0] = xr2;
             xr2 = (xr2 + 1) < xr2max ? xr2 + 1 : xr2;
             break;
-        case '_':
+        case '(':
             joint3->parent->rotation[0] = xr2;
             xr2 = (xr2 - 1) > xr2min ? xr2 - 1 : xr2;
+            break;
+        case '=':
+            trackball->zoom(-dfov);
+            break;
+        case '-':
+            trackball->zoom(dfov);
+            break;
+        case '+':
+            trackball->dolly(dz);
+            break;
+        case '_':
+            trackball->dolly(-dz);
+            break;
+        case '[':
+            dfov = dfov - 1 > 0 ? dfov - 1 : dfov;
+            break;
+        case ']':
+            dfov = dfov + 1 < 89 ? dfov + 1 : dfov;
+            break;
+        case '{':
+            dz = dz - 1 > 0 ? dz - 1 : dz;
+            break;
+        case '}':
+            dz = dz + 1 < 50 ? dz + 1 : dz;
+            break;
+        case ' ':
+            trackball->showAll();
+            break;
+        case 13:
+            delete cam;
+            cam = new Camera();
+            cam->aspect = (GLfloat)width/(GLfloat)height;
+            cam->lookAt();
+            delete trackball;
+            trackball = new Trackball(cam);
             break;
         case 27:
             exit(0);
     }
 }
 
+// All mouse stuffs
 GLfloat prevx, prevy;
+void rotation(int, int);
+void translation(int, int);
 
 void mouse(int button, int state, int x, int y)
 {
-    prevx = x;
-    prevy = y;
+    prevx = -x + width/2;
+    prevy = -y + height/2;
+    if (button==GLUT_LEFT_BUTTON)
+        glutMotionFunc(rotation);
+    if (button==GLUT_RIGHT_BUTTON)
+        glutMotionFunc(translation);
 }
 
-void motion(int x, int y)
+void rotation(int x, int y)
 {
-    roty += (x - prevx);
-    rotx += (y - prevy);
-    prevx = x;
-    prevy = y;
+    trackball->screenRot(prevx, prevy, -x + width/2, -y + height/2);
+    prevx = -x + width/2;
+    prevy = -y + height/2;
+}
+
+void translation(int x, int y)
+{
+    trackball->screenMov(prevx, prevy, -x + width/2, -y + height/2);
+    prevx = -x + width/2;
+    prevy = -y + height/2;
 }

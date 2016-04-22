@@ -23,7 +23,6 @@ class Trackball {
         Camera *cam;
         // it's a quaternion
         GLfloat rel_cam_pos[3] = {0, 0, -10};
-        Eigen::Matrix3f orient = Eigen::Matrix3f().setIdentity();
 
         void setCam();
         // dx, dy, dz need to be derived

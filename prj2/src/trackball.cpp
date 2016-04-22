@@ -11,8 +11,6 @@ Trackball::Trackball(Camera *cam) : cam(cam)
         rel_cam_pos[i] = cam->pos[i] - pos[i];
     }
     R = Eigen::Vector3f(rel_cam_pos).norm()*tan(rad(cam->fov)/2);
-    orient = Eigen::Quaternionf();
-    orient.setIdentity();
 }
 
 void Trackball::setCam()
@@ -35,21 +33,26 @@ void Trackball::translate(GLfloat dx, GLfloat dy, GLfloat dz)
 // implemented by quaternions and matrixes
 void Trackball::rotate(GLfloat start[3], GLfloat end[3])
 {
-    Eigen::Vector3f v = Eigen::Vector3f(start);
-    Eigen::Vector3f u = Eigen::Vector3f(end);
-    Eigen::Quaternionf cur_rot = Eigen::Quaternionf();
-    cur_rot.setFromTwoVectors(u,v);
-    Eigen::Matrix3f cur_rotm = cur_rot.toRotationMatrix();
-    Eigen::Vector3f rel_pos = Eigen::Vector3f(rel_cam_pos);
-    Eigen::Vector3f ori_pos = Eigen::Vector3f(0, 0, -rel_pos.norm());
-    orient = orient*cur_rot;
-    Eigen::Vector3f new_pos = orient*ori_pos;
-    Eigen::Vector3f up = orient*Eigen::Vector3f(0,1,0);
-    for (int i = 0; i < 3; i++)
-    {
-        rel_cam_pos[i] = new_pos[i];
-        cam->up[i] = up[i];
-    }
+    Eigen::Vector3f V = Eigen::Vector3f(start);
+    Eigen::Vector3f U = Eigen::Vector3f(end);
+    Eigen::Vector3f Z = -1*Eigen::Vector3f(rel_cam_pos);
+    Z.normalize();
+    Eigen::Vector3f Y = Eigen::Vector3f(cam->up);
+    Eigen::Vector3f X = Y.cross(Z);
+    Eigen::Vector3f u = U[0]*X + U[1]*Y + U[2]*Z;
+    Eigen::Vector3f v = V[0]*X + V[1]*Y + V[2]*Z;
+    Eigen::Quaternionf q = Eigen::Quaternionf(u.dot(v) + u.norm()*v.norm(), u.cross(v)[0], u.cross(v)[1], u.cross(v)[2]);
+    q.normalize();
+    Eigen::Quaternionf P = Eigen::Quaternionf(0, rel_cam_pos[0], rel_cam_pos[1], rel_cam_pos[2]);
+    Eigen::Quaternionf UP = Eigen::Quaternionf(0, cam->up[0], cam->up[1], cam->up[2]);
+    P = (q*P)*q.inverse();
+    UP = (q*UP)*q.inverse();
+    rel_cam_pos[0] = P.x();
+    rel_cam_pos[1] = P.y();
+    rel_cam_pos[2] = P.z();
+    cam->up[0] = UP.x();
+    cam->up[1] = UP.y();
+    cam->up[2] = UP.z();
     setCam();
 }
 

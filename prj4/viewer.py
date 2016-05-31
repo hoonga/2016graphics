@@ -83,6 +83,16 @@ class Window(pyglet.window.Window):
         cubes.sort(key=lambda x:x.pos.dot(self.TBC.cam.pos))
         for c in cubes:
             c.draw(self.TBC.tb.rel_cam_pos)
+        glClearColor(0, 0, 0, 0)
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_POINT_SMOOTH)
+        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST)
+        glEnable(GL_LINE_SMOOTH)
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+        glEnable(GL_COLOR_MATERIAL)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+
 
     def on_resize(self, width, height):
         width = width if width else 1
